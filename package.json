@@ -1,0 +1,35 @@
+{
+  "name": "join-assesment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "knexfile.js",
+  "scripts": {
+    "start": "nodemon ./server/server",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slim-hmidi/join-assesment.git"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "knex",
+    "objection", 
+    "pg",
+    "jest"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/slim-hmidi/join-assesment/issues"
+  },
+  "homepage": "https://github.com/slim-hmidi/join-assesment#readme",
+  "dependencies": {
+    "eslint": "^5.16.0",
+    "express": "^4.17.1",
+    "knex": "^0.17.5",
+    "objection": "^1.6.9",
+    "pg": "^7.11.0"
+  }
+}

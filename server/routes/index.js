@@ -22,4 +22,8 @@ routes.route('/stolenBikes/:officerId/:bikeId')
   .put(ctrlStolenBikes.affectStolenBike);
 
 
+routes.route('/stolenBikes/:officerId')
+  .put(ctrlStolenBikes.resolveCase);
+
+
 module.exports = routes;

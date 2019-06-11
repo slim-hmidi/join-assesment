@@ -4,6 +4,11 @@
   "description": "",
   "main": "knexfile.js",
   "scripts": {
+    "lint": "eslint ./ ",
+    "migrate": "knex migrate:latest",
+    "rollback": "knex migrate:rollback --all",
+    "seed:run": "knex seed:run",
+    "populate": "npm run rollback & npm run migrate & npm run seed:run",
     "start": "nodemon ./server/server",
     "test": "jest"
   },
@@ -15,7 +20,7 @@
     "node",
     "express",
     "knex",
-    "objection", 
+    "objection",
     "pg",
     "jest"
   ],
@@ -26,10 +31,14 @@
   },
   "homepage": "https://github.com/slim-hmidi/join-assesment#readme",
   "dependencies": {
-    "eslint": "^5.16.0",
     "express": "^4.17.1",
     "knex": "^0.17.5",
     "objection": "^1.6.9",
     "pg": "^7.11.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.17.3"
   }
 }

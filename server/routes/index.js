@@ -1,0 +1,22 @@
+const routes = require('express').Router();
+const ctrlStolenBikes = require('../controllers/stolenBikes');
+
+// middleware to normalize response
+routes.use((req, res, next) => {
+  res.success = (statusCode, message, data) => res.status(statusCode).send({
+    message,
+    data,
+  });
+  res.error = (statusCode, message, error) => res.status(statusCode).send({
+    message,
+    error,
+  });
+  return next();
+});
+
+
+routes.route('/stolenBikes')
+  .post(ctrlStolenBikes.reportStolenBike);
+
+
+module.exports = routes;

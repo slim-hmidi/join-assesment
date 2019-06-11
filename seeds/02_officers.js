@@ -1,17 +1,14 @@
 
-exports.seed = knex => knex('stolen_bikes').del()
-  .then(() => knex('stolen_bikes').insert([
+exports.seed = knex => knex('officers').del()
+  .then(() => knex('officers').insert([
     {
-      id: 1, owner_name: 'Smith', owner_phone_number: '+330612345678', frame_number: 'ATU1122CC12G', case_resolved: false,
+      id: 1, name: 'officer 1', available: true, stolen_bike_id: null,
     },
     {
-      id: 2, owner_name: 'Alex', owner_phone_number: '+330612345678', frame_number: 'ATU1122CC10F', case_resolved: false,
+      id: 2, name: 'officer 2', available: false, stolen_bike_id: 2,
     },
     {
-      id: 3, owner_name: 'Mark', owner_phone_number: '+330612345678', frame_number: 'AJU1452CC10F', case_resolved: false,
-    },
-    {
-      id: 4, owner_name: 'Mark', owner_phone_number: '+330612345678', frame_number: 'AJU0452CC10F', case_resolved: false,
+      id: 3, name: 'officer 3', available: false, stolen_bike_id: 1,
     },
   ]))
-  .finally(() => knex.schema.raw("SELECT setval(pg_get_serial_sequence('stolen_bikes', 'id'), max(id)) FROM stolen_bikes;"));
+  .finally(() => knex.schema.raw("SELECT setval(pg_get_serial_sequence('officers', 'id'), max(id)) FROM officers;"));

@@ -57,3 +57,45 @@ module.exports.reportStolenBike = async (req, res) => {
     return res.error(500, 'Internal Server Error', error.message);
   }
 };
+
+
+/**
+ * Affect a stolen bike to an available police officer
+ * @param {object} req - Express requrest object
+ * @param {object} res - Express response object
+ */
+module.exports.affectStolenBike = async (req, res) => {
+  const {
+    officerId,
+    bikeId,
+  } = req.params;
+
+  const oId = parseInt(officerId, 10);
+  const bId = parseInt(bikeId, 10);
+
+  try {
+    const fetchedOfficer = await Officer.query().findById(oId);
+
+    // check the existence of the officer
+    if (!fetchedOfficer) {
+      return res.error(400, 'No Officer found for the provided id');
+    }
+
+    // check the availability the officer
+    if (fetchedOfficer && !fetchedOfficer.available) {
+      return res.error(400, 'The fetched officer was affected to another case');
+    }
+
+    // update the availability of the fetched officer
+    const updatedOfficer = await Officer.query().patchAndFetchById(oId, {
+      available: false,
+      stolen_bike_id: bId,
+    });
+    return res.success(200, 'The case was affected successfully!', {
+      officerName: updatedOfficer.name,
+      stolenBikeId: updatedOfficer.stolen_bike_id,
+    });
+  } catch (error) {
+    return res.error(500, 'Internal Server Error', error);
+  }
+};

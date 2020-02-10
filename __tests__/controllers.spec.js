@@ -10,7 +10,6 @@ const knexConfig = require('../knexfile');
 
 const knex = Knex(knexConfig.test);
 describe('Stolen Bikes Controllers ', () => {
-  // beforeAll(() => knex.raw('DELETE FROM knex_migrations_lock;'));
   beforeEach(() => knex.migrate.rollback()
     .then(() => knex.migrate.latest())
     .then(() => knex.seed.run()));
@@ -28,25 +27,9 @@ describe('Stolen Bikes Controllers ', () => {
         .send(newStolenBike);
 
       expect(statusCode).toBe(201);
-      expect(body.message).toBe('The stolenBike was saved and affected to a police officer');
-    });
-
-    it('Should affect the stolen bike successfully to an available officer', async () => {
-      await Officer.query().patchAndFetchById(1, {
-        available: false,
-      });
-      const newStolenBike = {
-        ownerName: 'User x',
-        ownerPhoneNumber: '330612345678',
-        frameNumber: 'xxxxxxx',
-      };
-      const { statusCode, body } = await request(app)
-        .post('/stolenBikes')
-        .send(newStolenBike);
-
-      expect(statusCode).toBe(201);
       expect(body.message).toBe('The stolen Bike was saved successfully');
     });
+
 
     it('Should returns an error if the frameNumber already exists', async () => {
       await Officer.query().patchAndFetchById(1, {
@@ -79,36 +62,6 @@ describe('Stolen Bikes Controllers ', () => {
 
       expect(statusCode).toBe(400);
       expect(body.message).toBe('The frameNumber is required!');
-    });
-  });
-
-
-  describe('Affect a given stolen bike to an officer', () => {
-    it('Should affect successffully a given stolen bike to a given officer', async () => {
-      const { statusCode, body } = await request(app)
-        .put('/stolenBikes/1/4');
-
-
-      expect(statusCode).toBe(200);
-      expect(body.message).toBe('The case was affected successfully!');
-    });
-
-    it('Should returns an error when the officer not found', async () => {
-      const { statusCode, body } = await request(app)
-        .put('/stolenBikes/8/4');
-
-
-      expect(statusCode).toBe(400);
-      expect(body.message).toBe('No Officer found for the provided id');
-    });
-
-    it('Should returns an error when the officer was affected to another case', async () => {
-      const { statusCode, body } = await request(app)
-        .put('/stolenBikes/2/4');
-
-
-      expect(statusCode).toBe(400);
-      expect(body.message).toBe('The fetched officer was affected to another case');
     });
   });
 

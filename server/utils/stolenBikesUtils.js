@@ -1,5 +1,6 @@
 module.exports.filterByCriteria = (field, criteria) => query => query
   .where(field, criteria).limit(1);
+
 module.exports.filterByUnaffectedOfficer = (bikeId, officerId) => query => query.patchAndFetchById(
   officerId,
   {

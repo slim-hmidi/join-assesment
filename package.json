@@ -2,7 +2,6 @@
   "name": "join-assesment",
   "version": "1.0.0",
   "description": "",
-  "main": "knexfile.js",
   "scripts": {
     "lint": "eslint ./ ",
     "migrate": "knex migrate:latest",

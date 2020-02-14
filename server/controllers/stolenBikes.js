@@ -1,10 +1,5 @@
-const { raw } = require('objection');
 const StolenBike = require('../models/StolenBike');
 const Officer = require('../models/Officer');
-const {
-  // filterByCriteria,
-  affectCaseToOfficer,
-} = require('../utils/stolenBikesUtils');
 
 const stolenBikeEmitter = require('../utils/StolenBikeEmitter');
 
@@ -68,40 +63,19 @@ module.exports.resolveCase = async (req, res) => {
     };
 
     // update the officer availabilty
-    await Officer.query().upsertGraph({
+    const officerResolvedCase = await Officer.query().upsertGraph({
       id: oId,
       available: true,
-      stolen_bike_id: 0,
+      stolen_bike_id: null,
       stolenBike: {
         id: fecthedOfficer.stolen_bike_id,
         case_resolved: true,
       },
     }, options);
 
-    // affect unresolved cases to the officer
-    const unresolvedCase = await StolenBike.query()
-      .select('id')
-      .whereNotIn('id', raw(`
-          select stolen_bike_id as id from stolen_bikes as b
-          inner join officers as o
-          on o.stolen_bike_id = b.id
-        `))
-      .andWhere('case_resolved', 0);
-
-    if (unresolvedCase.length) {
-      const officerBaseQuery = Officer.query();
-      const newAffectedCase = await affectCaseToOfficer(
-        unresolvedCase[0].id,
-        officerId,
-        officerBaseQuery,
-      );
-
-      return res.success(200, 'A new case was affected to the officer', newAffectedCase);
-    }
-
-
-    return res.success(201, 'The case was resolved successfully and there is no case to resolve for the moment', {});
+    stolenBikeEmitter.emit('availableStolenBikes', officerResolvedCase.id);
+    return res.send(officerResolvedCase);
   } catch (error) {
-    return res.error(500, 'Internal Server Error', error.message);
+    return res.error(500, 'Internal Server Error', error.stack);
   }
 };

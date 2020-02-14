@@ -15,12 +15,12 @@ routes.use((req, res, next) => {
 });
 
 
-routes.route('/stolenBikes')
+routes.route('/stolen_bikes')
   .post(ctrlStolenBikes.reportStolenBike);
 
 
-routes.route('/stolenBikes/:officerId')
-  .put(ctrlStolenBikes.resolveCase);
+routes.route('/resolve_case/:officerId')
+  .patch(ctrlStolenBikes.resolveCase);
 
 
 module.exports = routes;

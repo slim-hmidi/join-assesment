@@ -3,9 +3,9 @@
 exports.up = (knex, Promise) => knex.schema
   .createTable('stolen_bikes', (table) => {
     table.increments('id').primary();
-    table.string('owner_name');
-    table.string('owner_phone_number');
-    table.string('frame_number');
+    table.string('name');
+    table.string('email');
+    table.string('bike_frame_number');
     table.boolean('case_resolved')
       .defaultTo(false);
   });

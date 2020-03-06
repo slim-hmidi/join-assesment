@@ -8,13 +8,13 @@ class StolenBike extends Model {
   static get jsonSchema() {
     return {
       type: 'object',
-      required: ['frame_number', 'owner_name', 'owner_phone_number'],
+      required: ['bike_frame_number', 'name', 'email'],
 
       properties: {
         id: { type: 'integer' },
-        owner_name: { type: 'string' },
-        owner_phone_number: { type: 'string' },
-        frame_number: { type: 'string' },
+        name: { type: 'string' },
+        email: { type: 'string' },
+        bike_frame_number: { type: 'string' },
         case_resolved: { type: 'boolean' },
       },
     };

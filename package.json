@@ -9,6 +9,7 @@
     "seed:run": "knex seed:run",
     "populate": "npm run rollback & npm run migrate & npm run seed:run",
     "start": "nodemon ./server/server",
+    "start:dev": "npm run populate && npm start",
     "test": "jest --force-exit"
   },
   "repository": {

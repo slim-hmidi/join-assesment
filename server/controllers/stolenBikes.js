@@ -10,23 +10,23 @@ const stolenBikeEmitter = require('../utils/StolenBikeEmitter');
  */
 module.exports.reportStolenBike = async (req, res) => {
   const {
-    ownerName,
-    ownerPhoneNumber,
-    frameNumber,
+    name,
+    email,
+    bikeFrameNumber,
   } = req.body;
 
   try {
     // check if the frameNumber is mentioned
-    if (!frameNumber) {
-      return res.error(400, 'The frameNumber is required!');
+    if (!bikeFrameNumber) {
+      return res.error(400, 'The bike frame number is required!');
     }
     // insert the stolen bike into database
     const reportedStolenBike = await StolenBike
       .query()
       .insert({
-        owner_name: ownerName,
-        frame_number: frameNumber,
-        owner_phone_number: ownerPhoneNumber,
+        name,
+        bike_frame_number: bikeFrameNumber,
+        email,
       });
 
     stolenBikeEmitter.emit('newStolenBike', reportedStolenBike.id);

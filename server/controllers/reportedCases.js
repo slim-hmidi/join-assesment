@@ -88,3 +88,45 @@ module.exports.resolveCase = async (req, res) => {
     return res.error(error.statusCode || 500, error.message);
   }
 };
+
+/**
+ * Fetch reported cases created by a user
+ * @param {object} req - Express requrest object
+ * @param {object} res - Express response object
+ * @returns {array<object>} - list of reported cases
+ */
+
+module.exports.fetchReportedCasesByUser = async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name) {
+      throw new ErrorHandler(400, 'The reporter name is not mentioned!');
+    }
+    const fetchReportedCases = await StolenBike.query().where('name', name);
+    return res.success(200, 'Fetch reported cases successfully', fetchReportedCases);
+  } catch (error) {
+    return res.error(error.statusCode || 500, error.message);
+  }
+};
+
+/**
+ * Fetch the affected case to a given officer
+ * @param {object} req - Express requrest object
+ * @param {object} res - Express response object
+ * @returns {object} - affected case
+ */
+
+module.exports.affectedCaseToOfficer = async (req, res) => {
+  try {
+    const { officerId } = req.params;
+    const fetchAffectedCase = await Officer.query()
+      .findById(officerId)
+      .whereNotNull('stolen_bike_id');
+    if (!fetchAffectedCase) {
+      return res.success(200, 'No case affected to officer', {});
+    }
+    return res.success(200, 'Fetch affected case successfully', fetchAffectedCase);
+  } catch (error) {
+    return res.error(error.statusCode || 500, error.message);
+  }
+};

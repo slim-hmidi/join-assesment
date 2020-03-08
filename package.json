@@ -10,6 +10,7 @@
     "populate": "npm run rollback & npm run migrate & npm run seed:run",
     "start": "nodemon ./server/server",
     "start:dev": "npm run populate && npm start",
+    "test:watch": "jest --watchAll",
     "test": "jest --force-exit"
   },
   "repository": {

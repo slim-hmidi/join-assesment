@@ -15,12 +15,17 @@ routes.use((req, res, next) => {
 });
 
 
-routes.route('/reported_case')
-  .post(ctrlReportedCases.reportStolenBike);
+routes.route('/reported_cases')
+  .post(ctrlReportedCases.reportStolenBike)
+  .get(ctrlReportedCases.fetchReportedCasesByUser);
 
 
-routes.route('/resolve_case/:officerId')
+routes.route('/resolved_cases/:officerId')
   .patch(ctrlReportedCases.resolveCase);
+
+
+routes.route('/affected_cases/:officerId')
+  .get(ctrlReportedCases.affectedCaseToOfficer);
 
 
 module.exports = routes;

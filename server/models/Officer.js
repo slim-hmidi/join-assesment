@@ -13,7 +13,7 @@ class Officer extends Model {
         id: { type: 'integer' },
         name: { type: 'string' },
         available: { type: 'boolean' },
-        stolen_bike_id: { type: 'integer' },
+        stolen_bike_id: { type: ['integer', 'null'] },
       },
     };
   }

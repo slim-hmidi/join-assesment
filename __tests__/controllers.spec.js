@@ -8,7 +8,7 @@ const Officer = require('../server/models/Officer');
 const knexConfig = require('../knexfile');
 
 const knex = Knex(knexConfig.test);
-describe('Stolen Bikes Controllers ', () => {
+describe('Reported Case Controllers ', () => {
   beforeEach(() => knex.migrate.rollback()
     .then(() => knex.migrate.latest())
     .then(() => knex.seed.run()));
@@ -22,7 +22,7 @@ describe('Stolen Bikes Controllers ', () => {
         bikeFrameNumber: 'xxxxxx',
       };
       const { statusCode, body } = await request(app)
-        .post('/stolen_bikes')
+        .post('/reported_case')
         .send(newStolenBike);
 
       expect(statusCode).toBe(201);
@@ -40,7 +40,7 @@ describe('Stolen Bikes Controllers ', () => {
         bikeFrameNumber: 'ATU1122CC10F',
       };
       const { statusCode, body } = await request(app)
-        .post('/stolen_bikes')
+        .post('/reported_case')
         .send(newStolenBike);
 
       expect(statusCode).toBe(500);
@@ -56,7 +56,7 @@ describe('Stolen Bikes Controllers ', () => {
         email: 'user.x@gmail.com',
       };
       const { statusCode, body } = await request(app)
-        .post('/stolen_bikes')
+        .post('/reported_case')
         .send(newStolenBike);
 
       expect(statusCode).toBe(400);

@@ -10,6 +10,6 @@ const server = http.createServer(app);
 
 
 server.listen(port, () => {
-  console.log('server runs on 127.0.0.1:3000');
+  console.log(`server runs on 127.0.0.1:${port}`);
 });
 module.exports = server;

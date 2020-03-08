@@ -1,5 +1,5 @@
 const routes = require('express').Router();
-const ctrlStolenBikes = require('../controllers/stolenBikes');
+const ctrlReportedCases = require('../controllers/reportedCases');
 
 // middleware to normalize response
 routes.use((req, res, next) => {
@@ -15,12 +15,12 @@ routes.use((req, res, next) => {
 });
 
 
-routes.route('/stolen_bikes')
-  .post(ctrlStolenBikes.reportStolenBike);
+routes.route('/reported_case')
+  .post(ctrlReportedCases.reportStolenBike);
 
 
 routes.route('/resolve_case/:officerId')
-  .patch(ctrlStolenBikes.resolveCase);
+  .patch(ctrlReportedCases.resolveCase);
 
 
 module.exports = routes;

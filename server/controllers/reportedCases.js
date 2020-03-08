@@ -2,6 +2,7 @@ const StolenBike = require('../models/StolenBike');
 const Officer = require('../models/Officer');
 
 const stolenBikeEmitter = require('../utils/StolenBikeEmitter');
+const { ErrorHandler } = require('../utils/error');
 
 /**
  * Store a stolen bike into database
@@ -18,7 +19,15 @@ module.exports.reportStolenBike = async (req, res) => {
   try {
     // check if the frameNumber is mentioned
     if (!bikeFrameNumber) {
-      return res.error(400, 'The bike frame number is required!');
+      throw new ErrorHandler(400, 'The bike frame number is required!');
+    }
+    const existedReportedStolenBike = await StolenBike
+      .query()
+      .findOne({
+        bike_frame_number: bikeFrameNumber,
+      });
+    if (existedReportedStolenBike) {
+      throw new ErrorHandler(400, 'The reported case already exists');
     }
     // insert the stolen bike into database
     const reportedStolenBike = await StolenBike
@@ -34,7 +43,7 @@ module.exports.reportStolenBike = async (req, res) => {
       'The stolen Bike was saved successfully',
       reportedStolenBike);
   } catch (error) {
-    return res.error(500, 'Internal Server Error', error.message);
+    return res.error(error.statusCode || 500, error.message);
   }
 };
 
@@ -55,7 +64,7 @@ module.exports.resolveCase = async (req, res) => {
     const fecthedOfficer = await Officer.query().findById(oId);
 
     if (!fecthedOfficer) {
-      return res.error(400, 'No officer found for the provided id');
+      throw new ErrorHandler(400, 'No officer found for the provided id');
     }
     const options = {
       relate: true,
@@ -76,6 +85,6 @@ module.exports.resolveCase = async (req, res) => {
     stolenBikeEmitter.emit('availableStolenBikes', officerResolvedCase.id);
     return res.send(officerResolvedCase);
   } catch (error) {
-    return res.error(500, 'Internal Server Error', error.stack);
+    return res.error(error.statusCode || 500, error.message);
   }
 };

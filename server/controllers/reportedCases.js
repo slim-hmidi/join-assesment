@@ -108,7 +108,6 @@ module.exports.fetchReportedCasesByUser = async (req, res) => {
     return res.error(error.statusCode || 500, error.message);
   }
 };
-
 /**
  * Fetch the affected case to a given officer
  * @param {object} req - Express requrest object

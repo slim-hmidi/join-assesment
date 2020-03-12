@@ -3,9 +3,9 @@ const ctrlReportedCases = require('../controllers/reportedCases');
 
 // middleware to normalize response
 routes.use((req, res, next) => {
-  res.success = (statusCode, message, data) => res.status(statusCode).send({
+  res.success = (statusCode, message, result) => res.status(statusCode).send({
     message,
-    data,
+    result,
   });
   res.error = (statusCode, message, error) => res.status(statusCode).send({
     message,

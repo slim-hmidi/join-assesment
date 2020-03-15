@@ -16,9 +16,12 @@ routes.use((req, res, next) => {
 
 
 routes.route('/reported_cases')
-  .post(ctrlReportedCases.reportStolenBike)
+  .post(ctrlReportedCases.reportCase)
   .get(ctrlReportedCases.fetchReportedCasesByUser);
 
+routes.route('/reported_cases/:reportedCaseId')
+  .delete(ctrlReportedCases.deleteReportedCase)
+  .patch(ctrlReportedCases.updateReportedCase);
 
 routes.route('/resolved_cases/:officerId')
   .patch(ctrlReportedCases.resolveCase);

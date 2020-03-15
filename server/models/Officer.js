@@ -13,19 +13,19 @@ class Officer extends Model {
         id: { type: 'integer' },
         name: { type: 'string' },
         available: { type: 'boolean' },
-        stolen_bike_id: { type: ['integer', 'null'] },
+        reported_case_id: { type: ['integer', 'null'] },
       },
     };
   }
 
   static get relationMappings() {
     return {
-      stolenBike: {
+      reportedCase: {
         relation: Model.BelongsToOneRelation,
-        modelClass: `${__dirname}/StolenBike`,
+        modelClass: `${__dirname}/ReportedCase`,
         join: {
-          from: 'officers.stolen_bike_id',
-          to: 'stolen_bikes.id',
+          from: 'officers.reported_case_id',
+          to: 'reported_cases.id',
         },
       },
     };

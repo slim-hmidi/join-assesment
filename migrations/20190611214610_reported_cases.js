@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 
 exports.up = (knex, Promise) => knex.schema
-  .createTable('stolen_bikes', (table) => {
+  .createTable('reported_cases', (table) => {
     table.increments('id').primary();
     table.string('name');
     table.string('email');
@@ -11,4 +11,4 @@ exports.up = (knex, Promise) => knex.schema
   });
 
 exports.down = (knex, Promise) => knex.schema
-  .raw('drop table if exists stolen_bikes cascade');
+  .raw('drop table if exists reported_cases cascade');

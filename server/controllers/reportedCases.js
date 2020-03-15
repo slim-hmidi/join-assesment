@@ -1,15 +1,15 @@
-const StolenBike = require('../models/StolenBike');
+const ReportedCase = require('../models/ReportedCase');
 const Officer = require('../models/Officer');
 
-const stolenBikeEmitter = require('../utils/StolenBikeEmitter');
+const reportedCaseEmitter = require('../utils/ReportedCaseEmitter');
 const { ErrorHandler } = require('../utils/error');
 
 /**
- * Store a stolen bike into database
+ * Save a report case into database
  * @param {object} req - Express requrest object
  * @param {object} res - Express response object
  */
-module.exports.reportStolenBike = async (req, res) => {
+module.exports.reportCase = async (req, res) => {
   const {
     name,
     email,
@@ -21,16 +21,16 @@ module.exports.reportStolenBike = async (req, res) => {
     if (!bikeFrameNumber) {
       throw new ErrorHandler(400, 'The bike frame number is required!');
     }
-    const existedReportedStolenBike = await StolenBike
+    const existedReportedCase = await ReportedCase
       .query()
       .findOne({
         bike_frame_number: bikeFrameNumber,
       });
-    if (existedReportedStolenBike) {
+    if (existedReportedCase) {
       throw new ErrorHandler(400, 'The reported case already exists');
     }
     // insert the stolen bike into database
-    const reportedStolenBike = await StolenBike
+    const reportedCase = await ReportedCase
       .query()
       .insert({
         name,
@@ -38,10 +38,10 @@ module.exports.reportStolenBike = async (req, res) => {
         email,
       });
 
-    stolenBikeEmitter.emit('newStolenBike', reportedStolenBike.id);
+    reportedCaseEmitter.emit('newReportedCase', reportedCase.id);
     return res.success(201,
-      'The stolen Bike was saved successfully',
-      reportedStolenBike);
+      'The reported case was saved successfully',
+      reportedCase);
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
   }
@@ -75,14 +75,14 @@ module.exports.resolveCase = async (req, res) => {
     const officerResolvedCase = await Officer.query().upsertGraph({
       id: oId,
       available: true,
-      stolen_bike_id: null,
-      stolenBike: {
-        id: fecthedOfficer.stolen_bike_id,
+      reported_case_id: null,
+      reportedCase: {
+        id: fecthedOfficer.reported_case_id,
         case_resolved: true,
       },
     }, options);
 
-    stolenBikeEmitter.emit('availableStolenBikes', officerResolvedCase.id);
+    reportedCaseEmitter.emit('availableReportedCases', officerResolvedCase.id);
     return res.send(officerResolvedCase);
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
@@ -102,7 +102,7 @@ module.exports.fetchReportedCasesByUser = async (req, res) => {
     if (!name) {
       throw new ErrorHandler(400, 'The reporter name is not mentioned!');
     }
-    const fetchReportedCases = await StolenBike.query().where('name', name);
+    const fetchReportedCases = await ReportedCase.query().where('name', name);
     return res.success(200, 'Fetch reported cases successfully', fetchReportedCases);
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
@@ -120,11 +120,70 @@ module.exports.affectedCaseToOfficer = async (req, res) => {
     const { officerId } = req.params;
     const fetchAffectedCase = await Officer.query()
       .findById(officerId)
-      .whereNotNull('stolen_bike_id');
+      .whereNotNull('reported_case_id');
     if (!fetchAffectedCase) {
       return res.success(200, 'No case affected to officer', {});
     }
     return res.success(200, 'Fetch affected case successfully', fetchAffectedCase);
+  } catch (error) {
+    return res.error(error.statusCode || 500, error.message);
+  }
+};
+
+/**
+ * Delete a reported case
+ * @param {object} req - Express requrest object
+ * @param {object} res - Express response object
+ */
+
+module.exports.deleteReportedCase = async (req, res) => {
+  try {
+    const { reportedCaseId } = req.params;
+    const affectedReportedCase = await Officer.query()
+      .findOne({ reported_case_id: reportedCaseId });
+
+
+    if (affectedReportedCase) {
+      throw new ErrorHandler(400, 'Can not delete an affected reported case!');
+    }
+
+    const fetchedReportedCase = await ReportedCase.query().findById(reportedCaseId);
+    if (!fetchedReportedCase) {
+      throw new ErrorHandler(404, 'Reported case not found');
+    }
+    const deletedReportedCase = await ReportedCase.query().deleteById(reportedCaseId);
+    return res.success(200, 'Reported case deleted successfully!', deletedReportedCase);
+  } catch (error) {
+    return res.error(error.statusCode || 500, error.message);
+  }
+};
+
+
+/**
+ * Update a reported case
+ * @param {object} req - Express requrest object
+ * @param {object} res - Express response object
+ */
+
+module.exports.updateReportedCase = async (req, res) => {
+  try {
+    const { reportedCaseId } = req.params;
+    const affectedReportedCase = await Officer.query()
+      .findOne({ reported_case_id: reportedCaseId });
+
+
+    if (affectedReportedCase) {
+      throw new ErrorHandler(400, 'Can not update an affected reported case!');
+    }
+
+    const fetchedReportedCase = await ReportedCase.query().findById(reportedCaseId);
+    if (!fetchedReportedCase) {
+      throw new ErrorHandler(404, 'Reported case not found');
+    }
+    const updatedReportedCase = await ReportedCase
+      .query()
+      .patchAndFetchById(reportedCaseId, req.body);
+    return res.success(200, 'Reported case updated successfully!', updatedReportedCase);
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
   }

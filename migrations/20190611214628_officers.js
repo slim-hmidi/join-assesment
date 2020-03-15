@@ -5,10 +5,10 @@ exports.up = knex => knex.schema
     table.string('name');
     table.boolean('available')
       .defaultTo(true);
-    table.integer('stolen_bike_id')
+    table.integer('reported_case_id')
       .unsigned()
       .references('id')
-      .inTable('stolen_bikes')
+      .inTable('reported_cases')
       .onDelete('SET NULL')
       .index();
   });

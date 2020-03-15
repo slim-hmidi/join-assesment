@@ -1,8 +1,8 @@
 
-exports.seed = knex => knex('stolen_bikes').del()
-  .then(() => knex('stolen_bikes').insert([
+exports.seed = knex => knex('reported_cases').del()
+  .then(() => knex('reported_cases').insert([
     {
-      id: 1, name: 'John Smith', email: 'john.smith@gmail.com', bike_frame_number: 'ATU1122CC12G', case_resolved: false,
+      id: 1, name: 'user', email: 'user.123@gmail.com', bike_frame_number: 'ATU1122CC12G', case_resolved: false,
     },
     {
       id: 2, name: 'Alex Stan', email: 'alex.stan@gmail.com', bike_frame_number: 'ATU1122CC10F', case_resolved: false,
@@ -14,4 +14,4 @@ exports.seed = knex => knex('stolen_bikes').del()
       id: 4, name: 'Mark Fred', email: 'mark.fred@yahoo.com', bike_frame_number: 'AJU0452CC10F', case_resolved: false,
     },
   ]))
-  .finally(() => knex.schema.raw("SELECT setval(pg_get_serial_sequence('stolen_bikes', 'id'), max(id)) FROM stolen_bikes;"));
+  .finally(() => knex.schema.raw("SELECT setval(pg_get_serial_sequence('reported_cases', 'id'), max(id)) FROM reported_cases;"));

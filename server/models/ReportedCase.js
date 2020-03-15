@@ -1,8 +1,8 @@
 const { Model } = require('objection');
 
-class StolenBike extends Model {
+class ReportedCase extends Model {
   static get tableName() {
-    return 'stolen_bikes';
+    return 'reported_cases';
   }
 
   static get jsonSchema() {
@@ -21,4 +21,4 @@ class StolenBike extends Model {
   }
 }
 
-module.exports = StolenBike;
+module.exports = ReportedCase;

@@ -3,7 +3,7 @@ const Knex = require('knex');
 const request = require('supertest');
 const app = require('../server/app');
 const Officer = require('../server/models/Officer');
-const StolenBike = require('../server/models/StolenBike');
+const ReportedCase = require('../server/models/ReportedCase');
 
 
 const knexConfig = require('../knexfile');
@@ -15,19 +15,19 @@ describe('Reported Case Controllers ', () => {
     .then(() => knex.seed.run()));
 
   afterEach(() => knex.migrate.rollback());
-  describe('Report Stolen Bike', () => {
-    it('Should affect the stolen bike successfully to an available officer', async () => {
-      const newStolenBike = {
+  describe('Report Case', () => {
+    it('Should affect the reported successfully to an available officer', async () => {
+      const newReportedCase = {
         name: 'User x',
         email: 'user.x@gmail.com',
         bikeFrameNumber: 'xxxxxx',
       };
       const { statusCode, body } = await request(app)
         .post('/reported_cases')
-        .send(newStolenBike);
+        .send(newReportedCase);
 
       expect(statusCode).toBe(201);
-      expect(body.message).toBe('The stolen Bike was saved successfully');
+      expect(body.message).toBe('The reported case was saved successfully');
     });
 
 
@@ -35,14 +35,14 @@ describe('Reported Case Controllers ', () => {
       await Officer.query().patchAndFetchById(1, {
         available: false,
       });
-      const newStolenBike = {
+      const newReportedCase = {
         name: 'User x',
         email: 'user.x@gmail.com',
         bikeFrameNumber: 'ATU1122CC10F',
       };
       const { statusCode, body } = await request(app)
         .post('/reported_cases')
-        .send(newStolenBike);
+        .send(newReportedCase);
 
       expect(statusCode).toBe(400);
       expect(body.message).toBe('The reported case already exists');
@@ -52,13 +52,13 @@ describe('Reported Case Controllers ', () => {
       await Officer.query().patchAndFetchById(1, {
         available: false,
       });
-      const newStolenBike = {
+      const newReportedCase = {
         name: 'User x',
         email: 'user.x@gmail.com',
       };
       const { statusCode, body } = await request(app)
         .post('/reported_cases')
-        .send(newStolenBike);
+        .send(newReportedCase);
 
       expect(statusCode).toBe(400);
       expect(body.message).toBe('The bike frame number is required!');
@@ -77,8 +77,13 @@ describe('Reported Case Controllers ', () => {
     });
 
     it('Should affect a new case when the officer resolve the previous one', async () => {
+      const officer = await Officer.query().insert({
+        name: 'officer',
+        available: false,
+        reported_case_id: 1,
+      });
       const { statusCode } = await request(app)
-        .patch('/resolved_cases/2');
+        .patch(`/resolved_cases/${officer.id}`);
 
 
       expect(statusCode).toBe(200);
@@ -87,14 +92,14 @@ describe('Reported Case Controllers ', () => {
 
   describe('Fetch reported cases by a given user', () => {
     it('Should return a list of reported cases according to their reporter', async () => {
-      const newStolenBike = {
+      const newReportedCase = {
         name: 'User x',
         email: 'user.x@gmail.com',
         bikeFrameNumber: 'xxxxxx',
       };
       await request(app)
         .post('/reported_cases')
-        .send(newStolenBike);
+        .send(newReportedCase);
 
 
       const { statusCode, body } = await request(app)
@@ -102,7 +107,7 @@ describe('Reported Case Controllers ', () => {
 
 
       expect(statusCode).toBe(200);
-      expect(body.data).toHaveLength(1);
+      expect(body.result).toHaveLength(1);
     });
 
     it('Should return an empty list if the reported does not exists', async () => {
@@ -110,7 +115,7 @@ describe('Reported Case Controllers ', () => {
         .get('/reported_cases?name=User x');
 
       expect(statusCode).toBe(200);
-      expect(body.data).toHaveLength(0);
+      expect(body.result).toHaveLength(0);
     });
 
     it('Should return an error if the reported name undefined', async () => {
@@ -124,7 +129,7 @@ describe('Reported Case Controllers ', () => {
 
   describe('Fetch affected case to an officer', () => {
     it('Should return an affected case to a given officer', async () => {
-      const reportedCase = await StolenBike.query().insert({
+      const reportedCase = await ReportedCase.query().insert({
         name: 'User x',
         email: 'user.x@gmail.com',
         bike_frame_number: 'xxxxxx',
@@ -132,7 +137,7 @@ describe('Reported Case Controllers ', () => {
       const newOfficer = await Officer.query().insert({
         name: 'officer',
         available: false,
-        stolen_bike_id: reportedCase.id,
+        reported_case_id: reportedCase.id,
       });
 
 
@@ -140,20 +145,113 @@ describe('Reported Case Controllers ', () => {
         .get(`/affected_cases/${newOfficer.id}`);
 
       expect(statusCode).toBe(200);
-      expect(body.data.stolen_bike_id).toBe(reportedCase.id);
+      expect(body.result.reported_case_id).toBe(reportedCase.id);
     });
 
     it('Should return an empty object if no case affected to an officer', async () => {
       const newOfficer = await Officer.query().insert({
         name: 'officer',
         available: false,
-        stolen_bike_id: null,
+        reported_case_id: null,
       });
       const { statusCode, body } = await request(app)
         .get(`/affected_cases/${newOfficer.id}`);
 
       expect(statusCode).toBe(200);
-      expect(body.data).toEqual({});
+      expect(body.result).toEqual({});
+    });
+  });
+
+  describe('Delete a reported case', () => {
+    it('Should return an error if the case is affected to an officer', async () => {
+      const reportedCase = await ReportedCase.query().insert({
+        name: 'User x',
+        email: 'user.x@gmail.com',
+        bike_frame_number: 'xxxxxx',
+      });
+      await Officer.query().insert({
+        name: 'officer',
+        available: false,
+        reported_case_id: reportedCase.id,
+      });
+
+      const { statusCode, body } = await request(app)
+        .delete(`/reported_cases/${reportedCase.id}`);
+
+      expect(statusCode).toBe(400);
+      expect(body.message).toBe('Can not delete an affected reported case!');
+    });
+
+    it('Should return an error if the case does not exist', async () => {
+      const reportedCaseId = 10;
+      const { statusCode, body } = await request(app)
+        .delete(`/reported_cases/${reportedCaseId}`);
+
+      expect(statusCode).toBe(404);
+      expect(body.message).toBe('Reported case not found');
+    });
+
+
+    it('Should delete the reported case successfully!', async () => {
+      const reportedCase = await request(app)
+        .post('/reported_cases')
+        .send({
+          name: 'User x',
+          email: 'user.x@gmail.com',
+          bikeFrameNumber: 'xxxxxx',
+        });
+      const { statusCode } = await request(app)
+        .delete(`/reported_cases/${reportedCase.body.result.id}`);
+
+
+      expect(statusCode).toBe(200);
+    });
+  });
+
+  describe('Update a reported case', () => {
+    it('Should return an error if the case is affected to an officer', async () => {
+      const reportedCase = await ReportedCase.query().insert({
+        name: 'User x',
+        email: 'user.x@gmail.com',
+        bike_frame_number: 'xxxxxx',
+      });
+      await Officer.query().insert({
+        name: 'officer',
+        available: false,
+        reported_case_id: reportedCase.id,
+      });
+
+      const { statusCode, body } = await request(app)
+        .patch(`/reported_cases/${reportedCase.id}`)
+        .send({ name: 'user y' });
+
+      expect(statusCode).toBe(400);
+      expect(body.message).toBe('Can not update an affected reported case!');
+    });
+
+    it('Should return an error if the case does not exist', async () => {
+      const reportedCaseId = 10;
+      const { statusCode, body } = await request(app)
+        .patch(`/reported_cases/${reportedCaseId}`)
+        .send({ name: 'user y' });
+
+      expect(statusCode).toBe(404);
+      expect(body.message).toBe('Reported case not found');
+    });
+
+
+    it('Should update the reported case successfully!', async () => {
+      const reportedCase = await ReportedCase.query().insert({
+        name: 'User x',
+        email: 'user.x@gmail.com',
+        bike_frame_number: 'xxxxxx',
+      });
+      const { statusCode } = await request(app)
+        .patch(`/reported_cases/${parseInt(reportedCase.id, 10)}`)
+        .send({ name: 'user y' });
+
+
+      expect(statusCode).toBe(200);
     });
   });
 });

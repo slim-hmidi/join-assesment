@@ -23,7 +23,9 @@ routes.route('/reported_cases/:reportedCaseId')
   .delete(ctrlReportedCases.deleteReportedCase)
   .patch(ctrlReportedCases.updateReportedCase);
 
+
 routes.route('/resolved_cases/:officerId')
+  .get(ctrlReportedCases.reolvedReportedCases)
   .patch(ctrlReportedCases.resolveCase);
 
 

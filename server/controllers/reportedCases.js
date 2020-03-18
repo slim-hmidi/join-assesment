@@ -188,3 +188,31 @@ module.exports.updateReportedCase = async (req, res) => {
     return res.error(error.statusCode || 500, error.message);
   }
 };
+
+
+/**
+ * Returns the list of resolved cases by an affected officer
+ * @param {object} req - Express requrest object
+ * @param {object} res - Express response object
+ * @returns {array<object>} - list of resolved cases
+ */
+
+module.exports.reolvedReportedCases = async (req, res) => {
+  try {
+    const { officerId } = req.params;
+    const fetchedOfficer = await Officer.query().findById(officerId);
+
+
+    if (!fetchedOfficer) {
+      throw new ErrorHandler(404, 'Officer not found');
+    }
+
+    const resolvedCasesList = await Officer.relatedQuery('reportedCase')
+      .for(officerId)
+      .where('case_resolved', true);
+
+    return res.success(200, `Resolved cases by officer: ${officerId} are fetched successfully!`, resolvedCasesList);
+  } catch (error) {
+    return res.error(error.statusCode || 500, error.message);
+  }
+};

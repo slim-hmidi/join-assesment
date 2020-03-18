@@ -254,4 +254,54 @@ describe('Reported Case Controllers ', () => {
       expect(statusCode).toBe(200);
     });
   });
+
+  describe('List archived reported cases', () => {
+    it('Should return an error if the officer id does not exist', async () => {
+      const officerId = 132;
+      const { statusCode, body } = await request(app)
+        .get(`/resolved_cases/${officerId}`);
+
+      expect(statusCode).toBe(404);
+      expect(body.message).toBe('Officer not found');
+    });
+
+    it('Should return an empty list if there is no resolved cases', async () => {
+      const reportedCase = await ReportedCase.query().insert({
+        name: 'User x',
+        email: 'user.x@gmail.com',
+        bike_frame_number: 'xxxxxx',
+      });
+      const affectedOfficer = await Officer.query().insert({
+        name: 'officer',
+        available: false,
+        reported_case_id: reportedCase.id,
+      });
+      const { statusCode, body } = await request(app)
+        .get(`/resolved_cases/${affectedOfficer.id}`);
+
+
+      expect(statusCode).toBe(200);
+      expect(body.result).toHaveLength(0);
+    });
+
+
+    it('Should return the list of cases resolved by a given officer', async () => {
+      const reportedCase = await ReportedCase.query().insert({
+        name: 'User x',
+        email: 'user.x@gmail.com',
+        bike_frame_number: 'xxxxxx',
+        case_resolved: true,
+      });
+      const affectedOfficer = await Officer.query().insert({
+        name: 'officer',
+        available: true,
+        reported_case_id: reportedCase.id,
+      });
+      const { statusCode, body } = await request(app)
+        .get(`/resolved_cases/${affectedOfficer.id}`);
+
+      expect(statusCode).toBe(200);
+      expect(body.result).toHaveLength(1);
+    });
+  });
 });

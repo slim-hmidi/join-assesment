@@ -16,11 +16,8 @@ module.exports.reportCase = async (req, res) => {
     bikeFrameNumber,
   } = req.body;
 
+
   try {
-    // check if the frameNumber is mentioned
-    if (!bikeFrameNumber) {
-      throw new ErrorHandler(400, 'The bike frame number is required!');
-    }
     const existedReportedCase = await ReportedCase
       .query()
       .findOne({

@@ -20,7 +20,7 @@ describe('Reported Case Controllers ', () => {
       const newReportedCase = {
         name: 'User x',
         email: 'user.x@gmail.com',
-        bikeFrameNumber: 'xxxxxx',
+        bikeFrameNumber: 333333,
       };
       const { statusCode, body } = await request(app)
         .post('/reported_cases')
@@ -38,7 +38,7 @@ describe('Reported Case Controllers ', () => {
       const newReportedCase = {
         name: 'User x',
         email: 'user.x@gmail.com',
-        bikeFrameNumber: 'ATU1122CC10F',
+        bikeFrameNumber: 123456,
       };
       const { statusCode, body } = await request(app)
         .post('/reported_cases')
@@ -46,22 +46,6 @@ describe('Reported Case Controllers ', () => {
 
       expect(statusCode).toBe(400);
       expect(body.message).toBe('The reported case already exists');
-    });
-
-    it('Should returns an error if the bikeframeNumber not mentioned', async () => {
-      await Officer.query().patchAndFetchById(1, {
-        available: false,
-      });
-      const newReportedCase = {
-        name: 'User x',
-        email: 'user.x@gmail.com',
-      };
-      const { statusCode, body } = await request(app)
-        .post('/reported_cases')
-        .send(newReportedCase);
-
-      expect(statusCode).toBe(400);
-      expect(body.message).toBe('The bike frame number is required!');
     });
   });
 
@@ -95,7 +79,7 @@ describe('Reported Case Controllers ', () => {
       const newReportedCase = {
         name: 'User x',
         email: 'user.x@gmail.com',
-        bikeFrameNumber: 'xxxxxx',
+        bikeFrameNumber: 333333,
       };
       await request(app)
         .post('/reported_cases')
@@ -132,7 +116,7 @@ describe('Reported Case Controllers ', () => {
       const reportedCase = await ReportedCase.query().insert({
         name: 'User x',
         email: 'user.x@gmail.com',
-        bike_frame_number: 'xxxxxx',
+        bike_frame_number: 123456789,
       });
       const newOfficer = await Officer.query().insert({
         name: 'officer',
@@ -167,7 +151,7 @@ describe('Reported Case Controllers ', () => {
       const reportedCase = await ReportedCase.query().insert({
         name: 'User x',
         email: 'user.x@gmail.com',
-        bike_frame_number: 'xxxxxx',
+        bike_frame_number: 123456789,
       });
       await Officer.query().insert({
         name: 'officer',
@@ -198,7 +182,7 @@ describe('Reported Case Controllers ', () => {
         .send({
           name: 'User x',
           email: 'user.x@gmail.com',
-          bikeFrameNumber: 'xxxxxx',
+          bikeFrameNumber: 3333333,
         });
       const { statusCode } = await request(app)
         .delete(`/reported_cases/${reportedCase.body.result.id}`);
@@ -213,7 +197,7 @@ describe('Reported Case Controllers ', () => {
       const reportedCase = await ReportedCase.query().insert({
         name: 'User x',
         email: 'user.x@gmail.com',
-        bike_frame_number: 'xxxxxx',
+        bike_frame_number: 123456789,
       });
       await Officer.query().insert({
         name: 'officer',
@@ -244,7 +228,7 @@ describe('Reported Case Controllers ', () => {
       const reportedCase = await ReportedCase.query().insert({
         name: 'User x',
         email: 'user.x@gmail.com',
-        bike_frame_number: 'xxxxxx',
+        bike_frame_number: 123456789,
       });
       const { statusCode } = await request(app)
         .patch(`/reported_cases/${parseInt(reportedCase.id, 10)}`)
@@ -269,7 +253,7 @@ describe('Reported Case Controllers ', () => {
       const reportedCase = await ReportedCase.query().insert({
         name: 'User x',
         email: 'user.x@gmail.com',
-        bike_frame_number: 'xxxxxx',
+        bike_frame_number: 123456789,
       });
       const affectedOfficer = await Officer.query().insert({
         name: 'officer',
@@ -289,7 +273,7 @@ describe('Reported Case Controllers ', () => {
       const reportedCase = await ReportedCase.query().insert({
         name: 'User x',
         email: 'user.x@gmail.com',
-        bike_frame_number: 'xxxxxx',
+        bike_frame_number: 123456789,
         case_resolved: true,
       });
       const affectedOfficer = await Officer.query().insert({

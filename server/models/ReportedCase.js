@@ -14,7 +14,7 @@ class ReportedCase extends Model {
         id: { type: 'integer' },
         name: { type: 'string' },
         email: { type: 'string' },
-        bike_frame_number: { type: 'string' },
+        bike_frame_number: { type: 'integer' },
         case_resolved: { type: 'boolean' },
       },
     };

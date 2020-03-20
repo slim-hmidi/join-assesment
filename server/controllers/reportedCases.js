@@ -204,9 +204,19 @@ module.exports.reolvedReportedCases = async (req, res) => {
       throw new ErrorHandler(404, 'Officer not found');
     }
 
-    const resolvedCasesList = await Officer.relatedQuery('reportedCase')
+    const fetchedResolvedCases = await Officer.relatedQuery('reportedCase')
       .for(officerId)
       .where('case_resolved', true);
+
+    let resolvedCasesList = [];
+    if (fetchedResolvedCases.length > 1
+      || (fetchedResolvedCases.length === 1 && Object.keys(fetchedResolvedCases[0]).length)) {
+      resolvedCasesList = fetchedResolvedCases.map(c => ({
+        name: c.name,
+        email: c.email,
+        bikeFrameNumber: c.bike_frame_number,
+      }));
+    }
 
     return res.success(200, `Resolved cases by officer: ${officerId} are fetched successfully!`, resolvedCasesList);
   } catch (error) {

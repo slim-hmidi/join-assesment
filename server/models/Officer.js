@@ -28,6 +28,14 @@ class Officer extends Model {
           to: 'reported_cases.id',
         },
       },
+      resolvedCase: {
+        relation: Model.HasManyRelation,
+        modelClass: `${__dirname}/ResolvedCase`,
+        join: {
+          from: 'officers.id',
+          to: 'resolved_cases.officer_id',
+        },
+      },
     };
   }
 }

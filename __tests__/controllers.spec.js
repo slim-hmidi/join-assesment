@@ -4,6 +4,7 @@ const request = require('supertest');
 const app = require('../server/app');
 const Officer = require('../server/models/Officer');
 const ReportedCase = require('../server/models/ReportedCase');
+const ResolvedCase = require('../server/models/ResolvedCase');
 
 
 const knexConfig = require('../knexfile');
@@ -187,7 +188,6 @@ describe('Reported Case Controllers ', () => {
       const { statusCode } = await request(app)
         .delete(`/reported_cases/${reportedCase.body.result.id}`);
 
-
       expect(statusCode).toBe(200);
     });
   });
@@ -280,6 +280,10 @@ describe('Reported Case Controllers ', () => {
         name: 'officer',
         available: true,
         reported_case_id: reportedCase.id,
+      });
+      await ResolvedCase.query().insert({
+        officer_id: affectedOfficer.id,
+        case_id: reportedCase.id,
       });
       const { statusCode, body } = await request(app)
         .get(`/resolved_cases/${affectedOfficer.id}`);

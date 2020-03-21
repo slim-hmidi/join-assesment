@@ -1,5 +1,6 @@
 const ReportedCase = require('../models/ReportedCase');
 const Officer = require('../models/Officer');
+const ResolvedCase = require('../models/ResolvedCase');
 
 const reportedCaseEmitter = require('../utils/ReportedCaseEmitter');
 const { ErrorHandler } = require('../utils/error');
@@ -58,9 +59,9 @@ module.exports.resolveCase = async (req, res) => {
 
   try {
     const oId = parseInt(officerId, 10);
-    const fecthedOfficer = await Officer.query().findById(oId);
+    const fetchedOfficer = await Officer.query().findById(oId);
 
-    if (!fecthedOfficer) {
+    if (!fetchedOfficer) {
       throw new ErrorHandler(400, 'No officer found for the provided id');
     }
     const options = {
@@ -68,13 +69,21 @@ module.exports.resolveCase = async (req, res) => {
       unrelate: true,
     };
 
+    if (!fetchedOfficer.reported_case_id) {
+      return res.success(200, 'No case affected to be resolved', {});
+    }
+    // Archive the resolved case
+    await ResolvedCase.query().insert({
+      officer_id: oId,
+      case_id: parseInt(fetchedOfficer.reported_case_id, 10),
+    });
     // update the officer availabilty
     const officerResolvedCase = await Officer.query().upsertGraph({
       id: oId,
       available: true,
       reported_case_id: null,
       reportedCase: {
-        id: fecthedOfficer.reported_case_id,
+        id: fetchedOfficer.reported_case_id,
         case_resolved: true,
       },
     }, options);
@@ -147,7 +156,6 @@ module.exports.deleteReportedCase = async (req, res) => {
     const affectedReportedCase = await Officer.query()
       .findOne({ reported_case_id: reportedCaseId });
 
-
     if (affectedReportedCase) {
       throw new ErrorHandler(400, 'Can not delete an affected reported case!');
     }
@@ -207,18 +215,19 @@ module.exports.reolvedReportedCases = async (req, res) => {
     const { officerId } = req.params;
     const fetchedOfficer = await Officer.query().findById(officerId);
 
-
     if (!fetchedOfficer) {
       throw new ErrorHandler(404, 'Officer not found');
     }
 
-    const fetchedResolvedCases = await Officer.relatedQuery('reportedCase')
+    const fetchedResolvedCases = await Officer
+      .relatedQuery('resolvedCase')
+      .select(['rc.name', 'rc.email', 'rc.bike_frame_number'])
       .for(officerId)
-      .where('case_resolved', true);
+      .joinRelated('reportedCase', { alias: 'rc' });
+
 
     let resolvedCasesList = [];
-    if (fetchedResolvedCases.length > 1
-      || (fetchedResolvedCases.length === 1 && Object.keys(fetchedResolvedCases[0]).length)) {
+    if (fetchedResolvedCases.length) {
       resolvedCasesList = fetchedResolvedCases.map(c => ({
         name: c.name,
         email: c.email,

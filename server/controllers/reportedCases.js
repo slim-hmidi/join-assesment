@@ -126,19 +126,20 @@ module.exports.affectedCaseToOfficer = async (req, res) => {
     const { officerId } = req.params;
     const fetchAffectedCase = await Officer.relatedQuery('reportedCase')
       .for(officerId)
-      .where('case_resolved', false)
-      .limit(1);
+      .where('case_resolved', false);
 
-    if (!fetchAffectedCase.length
-      || (fetchAffectedCase.length === 1 && !Object.keys(fetchAffectedCase).length)) {
+    if (!fetchAffectedCase.length) {
       return res.success(200, 'No case affected to officer', {});
     }
-    return res.success(200, 'Fetch affected case successfully', {
-      name: fetchAffectedCase[0].name,
-      email: fetchAffectedCase[0].email,
-      bikeFrameNumber: fetchAffectedCase[0].bike_frame_number,
-      caseResolved: fetchAffectedCase[0].case_resolved,
-    });
+
+    const affectedCases = fetchAffectedCase.map(c => ({
+      name: c.name,
+      email: c.email,
+      bikeFrameNumber: c.bike_frame_number,
+      caseResolved: c.case_resolved,
+    }));
+
+    return res.success(200, 'Fetch affected case successfully', affectedCases);
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
   }

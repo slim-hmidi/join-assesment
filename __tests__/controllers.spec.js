@@ -129,7 +129,7 @@ describe('Reported Case Controllers ', () => {
         .get(`/affected_cases/${newOfficer.id}`);
 
       expect(statusCode).toBe(200);
-      expect(body.result.reported_case_id).toBe(reportedCase.id);
+      expect(body.result.bikeFrameNumber).toBe(reportedCase.bike_frame_number);
     });
 
     it('Should return an empty object if no case affected to an officer', async () => {

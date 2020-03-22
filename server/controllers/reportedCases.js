@@ -139,7 +139,7 @@ module.exports.affectedCaseToOfficer = async (req, res) => {
       name: c.name,
       email: c.email,
       bikeFrameNumber: c.bike_frame_number,
-      caseResolved: c.case_resolved,
+      caseResolved: c.case_resolved ? 1 : 0,
     }));
 
     return res.success(200, 'Fetch affected case successfully', affectedCases);

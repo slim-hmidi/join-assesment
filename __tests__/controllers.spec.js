@@ -68,7 +68,8 @@ describe('Reported Case Controllers ', () => {
         reported_case_id: 1,
       });
       const { statusCode } = await request(app)
-        .patch(`/resolved_cases/${officer.id}`);
+        .patch(`/resolved_cases/${officer.id}`)
+        .send({ reportedCaseId: 1 });
 
 
       expect(statusCode).toBe(200);

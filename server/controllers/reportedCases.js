@@ -57,6 +57,8 @@ module.exports.resolveCase = async (req, res) => {
     officerId,
   } = req.params;
 
+  const { reportedCaseId } = req.body;
+
   try {
     const oId = parseInt(officerId, 10);
     const fetchedOfficer = await Officer.query().findById(oId);
@@ -75,7 +77,7 @@ module.exports.resolveCase = async (req, res) => {
     // Archive the resolved case
     await ResolvedCase.query().insert({
       officer_id: oId,
-      case_id: parseInt(fetchedOfficer.reported_case_id, 10),
+      case_id: parseInt(reportedCaseId, 10),
     });
     // update the officer availabilty
     const officerResolvedCase = await Officer.query().upsertGraph({
@@ -83,7 +85,7 @@ module.exports.resolveCase = async (req, res) => {
       available: true,
       reported_case_id: null,
       reportedCase: {
-        id: fetchedOfficer.reported_case_id,
+        id: parseInt(reportedCaseId, 10),
         case_resolved: true,
       },
     }, options);

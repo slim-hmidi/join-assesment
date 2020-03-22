@@ -91,7 +91,7 @@ module.exports.resolveCase = async (req, res) => {
     }, options);
 
     reportedCaseEmitter.emit('availableReportedCases', officerResolvedCase.id);
-    return res.success(204, 'Case was resolved successfully');
+    return res.success(200, 'Case was resolved successfully', reportedCaseId);
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
   }

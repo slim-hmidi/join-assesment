@@ -91,7 +91,7 @@ module.exports.resolveCase = async (req, res) => {
     }, options);
 
     reportedCaseEmitter.emit('availableReportedCases', officerResolvedCase.id);
-    return res.send(officerResolvedCase);
+    return res.success(204, 'Case was resolved successfully');
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
   }
@@ -135,6 +135,7 @@ module.exports.affectedCaseToOfficer = async (req, res) => {
     }
 
     const affectedCases = fetchAffectedCase.map(c => ({
+      caseId: c.id,
       name: c.name,
       email: c.email,
       bikeFrameNumber: c.bike_frame_number,

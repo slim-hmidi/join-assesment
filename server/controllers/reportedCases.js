@@ -213,7 +213,7 @@ module.exports.updateReportedCase = async (req, res) => {
  * @returns {array<object>} - list of resolved cases
  */
 
-module.exports.reolvedReportedCases = async (req, res) => {
+module.exports.resolvedReportedCases = async (req, res) => {
   try {
     const { officerId } = req.params;
     const fetchedOfficer = await Officer.query().findById(officerId);

@@ -25,7 +25,7 @@ routes.route('/reported_cases/:reportedCaseId')
 
 
 routes.route('/resolved_cases/:officerId')
-  .get(ctrlReportedCases.reolvedReportedCases)
+  .get(ctrlReportedCases.resolvedReportedCases)
   .patch(ctrlReportedCases.resolveCase);
 
 

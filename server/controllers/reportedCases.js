@@ -1,9 +1,12 @@
+const WebSocket = require('ws');
 const ReportedCase = require('../models/ReportedCase');
 const Officer = require('../models/Officer');
 const ResolvedCase = require('../models/ResolvedCase');
 
 const reportedCaseEmitter = require('../utils/ReportedCaseEmitter');
 const { ErrorHandler } = require('../utils/error');
+
+const wss = new WebSocket.Server({ port: 9090 });
 
 /**
  * Save a report case into database
@@ -64,7 +67,7 @@ module.exports.resolveCase = async (req, res) => {
     const fetchedOfficer = await Officer.query().findById(oId);
 
     if (!fetchedOfficer) {
-      throw new ErrorHandler(400, 'No officer found for the provided id');
+      throw new ErrorHandler(404, 'No officer found for the provided id');
     }
     const options = {
       relate: true,
@@ -74,11 +77,22 @@ module.exports.resolveCase = async (req, res) => {
     if (!fetchedOfficer.reported_case_id) {
       return res.success(200, 'No case affected to be resolved', {});
     }
+
+    if (fetchedOfficer.reported_case_id !== reportedCaseId) {
+      throw new ErrorHandler(404, 'The provided reported case does not match the affected one');
+    }
     // Archive the resolved case
-    await ResolvedCase.query().insert({
+    const resolvedCase = await ResolvedCase.query().insert({
       officer_id: oId,
       case_id: parseInt(reportedCaseId, 10),
     });
+
+    if (process.env.NODE_ENV !== 'test'
+      && resolvedCase && Object.keys(resolvedCase).length) {
+      wss.on('connection', (ws) => {
+        ws.send(`The reported case n°: ${resolvedCase.case_id} was resolved `);
+      });
+    }
     // update the officer availabilty
     const officerResolvedCase = await Officer.query().upsertGraph({
       id: oId,
@@ -225,19 +239,12 @@ module.exports.resolvedReportedCases = async (req, res) => {
 
     const fetchedResolvedCases = await Officer
       .relatedQuery('resolvedCase')
-      .select(['rc.name', 'rc.email', 'rc.bike_frame_number'])
+      .select(['rc.id as caseId', 'rc.name', 'rc.email', 'rc.bike_frame_number as bikeFrameNumber'])
       .for(officerId)
       .joinRelated('reportedCase', { alias: 'rc' });
 
 
-    let resolvedCasesList = [];
-    if (fetchedResolvedCases.length) {
-      resolvedCasesList = fetchedResolvedCases.map(c => ({
-        name: c.name,
-        email: c.email,
-        bikeFrameNumber: c.bike_frame_number,
-      }));
-    }
+    const resolvedCasesList = fetchedResolvedCases.length ? fetchedResolvedCases : [];
 
     return res.success(200, `Resolved cases by officer: ${officerId} are fetched successfully!`, resolvedCasesList);
   } catch (error) {

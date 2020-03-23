@@ -1,7 +1,7 @@
 process.env.NODE_ENV = 'test';
 const Knex = require('knex');
 const request = require('supertest');
-const app = require('../server/app');
+const { app } = require('../server/app');
 const Officer = require('../server/models/Officer');
 const ReportedCase = require('../server/models/ReportedCase');
 const ResolvedCase = require('../server/models/ResolvedCase');

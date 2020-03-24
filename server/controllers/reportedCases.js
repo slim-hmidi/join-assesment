@@ -90,7 +90,10 @@ module.exports.resolveCase = async (req, res) => {
     if (process.env.NODE_ENV !== 'test'
       && resolvedCase && Object.keys(resolvedCase).length) {
       wss.on('connection', (ws) => {
-        ws.send(`The reported case n°: ${resolvedCase.case_id} was resolved `);
+        ws.send(JSON.stringify({
+          caseId: resolvedCase.case_id,
+          message: `The reported case n°: ${resolvedCase.case_id} was resolved`,
+        }));
       });
     }
     // update the officer availabilty
@@ -112,11 +115,11 @@ module.exports.resolveCase = async (req, res) => {
 };
 
 /**
- * Fetch reported cases created by a user
- * @param {object} req - Express requrest object
- * @param {object} res - Express response object
- * @returns {array<object>} - list of reported cases
- */
+   * Fetch reported cases created by a user
+   * @param {object} req - Express requrest object
+   * @param {object} res - Express response object
+   * @returns {array<object>} - list of reported cases
+   */
 
 module.exports.fetchReportedCasesByUser = async (req, res) => {
   try {
@@ -131,11 +134,11 @@ module.exports.fetchReportedCasesByUser = async (req, res) => {
   }
 };
 /**
- * Fetch the affected case to a given officer
- * @param {object} req - Express requrest object
- * @param {object} res - Express response object
- * @returns {object} - affected case
- */
+   * Fetch the affected case to a given officer
+   * @param {object} req - Express requrest object
+   * @param {object} res - Express response object
+   * @returns {object} - affected case
+   */
 
 module.exports.affectedCaseToOfficer = async (req, res) => {
   try {
@@ -163,10 +166,10 @@ module.exports.affectedCaseToOfficer = async (req, res) => {
 };
 
 /**
- * Delete a reported case
- * @param {object} req - Express requrest object
- * @param {object} res - Express response object
- */
+   * Delete a reported case
+   * @param {object} req - Express requrest object
+   * @param {object} res - Express response object
+   */
 
 module.exports.deleteReportedCase = async (req, res) => {
   try {
@@ -191,10 +194,10 @@ module.exports.deleteReportedCase = async (req, res) => {
 
 
 /**
- * Update a reported case
- * @param {object} req - Express requrest object
- * @param {object} res - Express response object
- */
+   * Update a reported case
+   * @param {object} req - Express requrest object
+   * @param {object} res - Express response object
+   */
 
 module.exports.updateReportedCase = async (req, res) => {
   try {
@@ -222,11 +225,11 @@ module.exports.updateReportedCase = async (req, res) => {
 
 
 /**
- * Returns the list of resolved cases by an affected officer
- * @param {object} req - Express requrest object
- * @param {object} res - Express response object
- * @returns {array<object>} - list of resolved cases
- */
+   * Returns the list of resolved cases by an affected officer
+   * @param {object} req - Express requrest object
+   * @param {object} res - Express response object
+   * @returns {array<object>} - list of resolved cases
+   */
 
 module.exports.resolvedReportedCases = async (req, res) => {
   try {

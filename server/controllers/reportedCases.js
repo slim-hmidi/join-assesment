@@ -5,6 +5,7 @@ const ResolvedCase = require('../models/ResolvedCase');
 
 const reportedCaseEmitter = require('../utils/ReportedCaseEmitter');
 const { ErrorHandler } = require('../utils/error');
+const { formatData } = require('../utils/reportedCasesUtils');
 
 const wss = new WebSocket.Server({ port: 9090 });
 
@@ -42,7 +43,7 @@ module.exports.reportCase = async (req, res) => {
     reportedCaseEmitter.emit('newReportedCase', reportedCase.id);
     return res.success(201,
       'The reported case was saved successfully',
-      reportedCase);
+      formatData(reportedCase));
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
   }
@@ -128,7 +129,7 @@ module.exports.fetchReportedCasesByUser = async (req, res) => {
       throw new ErrorHandler(400, 'The reporter name is not mentioned!');
     }
     const fetchReportedCases = await ReportedCase.query().where('name', name);
-    return res.success(200, 'Fetch reported cases successfully', fetchReportedCases);
+    return res.success(200, 'Fetch reported cases successfully', formatData(fetchReportedCases));
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
   }
@@ -173,20 +174,21 @@ module.exports.affectedCaseToOfficer = async (req, res) => {
 
 module.exports.deleteReportedCase = async (req, res) => {
   try {
-    const { reportedCaseId } = req.params;
+    const { caseId } = req.params;
     const affectedReportedCase = await Officer.query()
-      .findOne({ reported_case_id: reportedCaseId });
+      .findOne({ reported_case_id: caseId });
 
     if (affectedReportedCase) {
       throw new ErrorHandler(400, 'Can not delete an affected reported case!');
     }
 
-    const fetchedReportedCase = await ReportedCase.query().findById(reportedCaseId);
+    const fetchedReportedCase = await ReportedCase.query().findById(caseId);
     if (!fetchedReportedCase) {
       throw new ErrorHandler(404, 'Reported case not found');
     }
-    const deletedReportedCase = await ReportedCase.query().deleteById(reportedCaseId);
-    return res.success(200, 'Reported case deleted successfully!', deletedReportedCase);
+
+    const deletedReportedCase = await ReportedCase.query().deleteById(caseId);
+    return res.success(200, 'Reported case deleted successfully!', formatData(deletedReportedCase));
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
   }
@@ -201,23 +203,29 @@ module.exports.deleteReportedCase = async (req, res) => {
 
 module.exports.updateReportedCase = async (req, res) => {
   try {
-    const { reportedCaseId } = req.params;
+    const { caseId } = req.params;
     const affectedReportedCase = await Officer.query()
-      .findOne({ reported_case_id: reportedCaseId });
+      .findOne({ reported_case_id: caseId });
 
 
     if (affectedReportedCase) {
       throw new ErrorHandler(400, 'Can not update an affected reported case!');
     }
 
-    const fetchedReportedCase = await ReportedCase.query().findById(reportedCaseId);
+    const fetchedReportedCase = await ReportedCase.query().findById(caseId);
     if (!fetchedReportedCase) {
       throw new ErrorHandler(404, 'Reported case not found');
     }
     const updatedReportedCase = await ReportedCase
       .query()
-      .patchAndFetchById(reportedCaseId, req.body);
-    return res.success(200, 'Reported case updated successfully!', updatedReportedCase);
+      .patchAndFetchById(caseId, {
+        id: req.body.caseId,
+        name: req.body.name,
+        email: req.body.email,
+        case_resolved: !!req.body.case_resolved,
+        bike_frame_number: req.body.bikeFrameNumber,
+      });
+    return res.success(200, 'Reported case updated successfully!', formatData(updatedReportedCase));
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
   }

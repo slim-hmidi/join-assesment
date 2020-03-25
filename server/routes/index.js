@@ -19,9 +19,9 @@ routes.route('/reported_cases')
   .post(ctrlReportedCases.reportCase)
   .get(ctrlReportedCases.fetchReportedCasesByUser);
 
-routes.route('/reported_cases/:reportedCaseId')
+routes.route('/reported_cases/:caseId')
   .delete(ctrlReportedCases.deleteReportedCase)
-  .patch(ctrlReportedCases.updateReportedCase);
+  .put(ctrlReportedCases.updateReportedCase);
 
 
 routes.route('/resolved_cases/:officerId')

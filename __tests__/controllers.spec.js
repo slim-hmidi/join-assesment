@@ -10,6 +10,7 @@ const ResolvedCase = require('../server/models/ResolvedCase');
 const knexConfig = require('../knexfile');
 
 const knex = Knex(knexConfig.test);
+
 describe('Reported Case Controllers ', () => {
   beforeEach(() => knex.migrate.rollback()
     .then(() => knex.migrate.latest())
@@ -57,7 +58,7 @@ describe('Reported Case Controllers ', () => {
         .patch('/resolved_cases/9');
 
 
-      expect(statusCode).toBe(400);
+      expect(statusCode).toBe(404);
       expect(body.message).toBe('No officer found for the provided id');
     });
 
@@ -184,10 +185,10 @@ describe('Reported Case Controllers ', () => {
         .send({
           name: 'User x',
           email: 'user.x@gmail.com',
-          bikeFrameNumber: 3333333,
+          bikeFrameNumber: 54548454,
         });
       const { statusCode } = await request(app)
-        .delete(`/reported_cases/${reportedCase.body.result.id}`);
+        .delete(`/reported_cases/${reportedCase.body.result.caseId}`);
 
       expect(statusCode).toBe(200);
     });
@@ -207,7 +208,7 @@ describe('Reported Case Controllers ', () => {
       });
 
       const { statusCode, body } = await request(app)
-        .patch(`/reported_cases/${reportedCase.id}`)
+        .put(`/reported_cases/${reportedCase.id}`)
         .send({ name: 'user y' });
 
       expect(statusCode).toBe(400);
@@ -217,7 +218,7 @@ describe('Reported Case Controllers ', () => {
     it('Should return an error if the case does not exist', async () => {
       const reportedCaseId = 10;
       const { statusCode, body } = await request(app)
-        .patch(`/reported_cases/${reportedCaseId}`)
+        .put(`/reported_cases/${reportedCaseId}`)
         .send({ name: 'user y' });
 
       expect(statusCode).toBe(404);
@@ -232,7 +233,7 @@ describe('Reported Case Controllers ', () => {
         bike_frame_number: 123456789,
       });
       const { statusCode } = await request(app)
-        .patch(`/reported_cases/${parseInt(reportedCase.id, 10)}`)
+        .put(`/reported_cases/${parseInt(reportedCase.id, 10)}`)
         .send({ name: 'user y' });
 
 

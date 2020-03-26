@@ -5,7 +5,7 @@ exports.up = (knex, Promise) => knex.schema
     table.increments('id').primary();
     table.string('name');
     table.string('email');
-    table.integer('bike_frame_number');
+    table.decimal('bike_frame_number', 10, 0);
     table.boolean('case_resolved')
       .defaultTo(false);
   });

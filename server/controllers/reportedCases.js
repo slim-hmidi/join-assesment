@@ -21,7 +21,6 @@ module.exports.reportCase = async (req, res) => {
     bikeFrameNumber,
   } = req.body;
 
-
   try {
     const existedReportedCase = await ReportedCase
       .query()
@@ -149,18 +148,10 @@ module.exports.affectedCaseToOfficer = async (req, res) => {
       .where('case_resolved', false);
 
     if (!fetchAffectedCase.length) {
-      return res.success(200, 'No case affected to officer', {});
+      return res.success(200, 'No case affected to officer', []);
     }
 
-    const affectedCases = fetchAffectedCase.map(c => ({
-      caseId: c.id,
-      name: c.name,
-      email: c.email,
-      bikeFrameNumber: c.bike_frame_number,
-      caseResolved: c.case_resolved ? 1 : 0,
-    }));
-
-    return res.success(200, 'Fetch affected case successfully', affectedCases);
+    return res.success(200, 'Fetch affected case successfully', formatData(fetchAffectedCase));
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
   }
@@ -187,7 +178,7 @@ module.exports.deleteReportedCase = async (req, res) => {
       throw new ErrorHandler(404, 'Reported case not found');
     }
 
-    const deletedReportedCase = await ReportedCase.query().deleteById(caseId);
+    const deletedReportedCase = await ReportedCase.query().deleteById(caseId).returning('*');
     return res.success(200, 'Reported case deleted successfully!', formatData(deletedReportedCase));
   } catch (error) {
     return res.error(error.statusCode || 500, error.message);
@@ -207,7 +198,6 @@ module.exports.updateReportedCase = async (req, res) => {
     const affectedReportedCase = await Officer.query()
       .findOne({ reported_case_id: caseId });
 
-
     if (affectedReportedCase) {
       throw new ErrorHandler(400, 'Can not update an affected reported case!');
     }
@@ -223,7 +213,7 @@ module.exports.updateReportedCase = async (req, res) => {
         name: req.body.name,
         email: req.body.email,
         case_resolved: !!req.body.case_resolved,
-        bike_frame_number: req.body.bikeFrameNumber,
+        bike_frame_number: Number(req.body.bikeFrameNumber),
       });
     return res.success(200, 'Reported case updated successfully!', formatData(updatedReportedCase));
   } catch (error) {

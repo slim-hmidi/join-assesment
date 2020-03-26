@@ -15,6 +15,7 @@ reportedCaseEmitter.on('newReportedCase', async (id) => {
     if (unaffectedOfficer) {
       const newAffectedOfficer = await Officer.query().patchAndFetchById(unaffectedOfficer.id, {
         reported_case_id: id,
+        available: false,
       });
       return `ReportedCase: ${id} affcted to officer: ${newAffectedOfficer}`;
     }

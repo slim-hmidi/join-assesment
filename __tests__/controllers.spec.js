@@ -227,13 +227,17 @@ describe('Reported Case Controllers ', () => {
 
 
     it('Should update the reported case successfully!', async () => {
-      const reportedCase = await ReportedCase.query().insert({
-        name: 'User x',
-        email: 'user.x@gmail.com',
-        bike_frame_number: 123456789,
-      });
+      const { body } = await request(app)
+        .post('/reported_cases')
+        .send({
+          name: 'User x',
+          email: 'user.x@gmail.com',
+          bikeFrameNumber: 555,
+        });
+
+      const { caseId } = body.result;
       const { statusCode } = await request(app)
-        .put(`/reported_cases/${parseInt(reportedCase.id, 10)}`)
+        .put(`/reported_cases/${caseId}`)
         .send({ name: 'user y' });
 
 

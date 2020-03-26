@@ -26,8 +26,8 @@ const formatData = (data) => {
       caseId: d.id,
       name: d.name,
       email: d.email,
-      bikeFrameNumber: d.bike_frame_number,
-      caseResolved: d.case_resolved,
+      bikeFrameNumber: Number(d.bike_frame_number),
+      caseResolved: d.case_resolved ? 1 : 0,
     }));
   }
   return Object.assign({}, {
@@ -35,7 +35,7 @@ const formatData = (data) => {
     name: data.name,
     email: data.email,
     bikeFrameNumber: data.bike_frame_number,
-    caseResolved: data.case_resolved,
+    caseResolved: data.case_resolved ? 1 : 0,
   });
 };
 

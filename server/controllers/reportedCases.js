@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const { v4 } = require('uuid');
 const ReportedCase = require('../models/ReportedCase');
 const Officer = require('../models/Officer');
 const ResolvedCase = require('../models/ResolvedCase');
@@ -7,7 +8,9 @@ const reportedCaseEmitter = require('../utils/ReportedCaseEmitter');
 const { ErrorHandler } = require('../utils/error');
 const { formatData } = require('../utils/reportedCasesUtils');
 
+
 const wss = new WebSocket.Server({ port: 9090 });
+const uuidv4 = v4;
 
 /**
  * Save a report case into database
@@ -91,7 +94,7 @@ module.exports.resolveCase = async (req, res) => {
       && resolvedCase && Object.keys(resolvedCase).length) {
       wss.on('connection', (ws) => {
         ws.send(JSON.stringify({
-          caseId: resolvedCase.case_id,
+          caseId: uuidv4(),
           message: `The reported case n°: ${resolvedCase.case_id} was resolved`,
         }));
       });

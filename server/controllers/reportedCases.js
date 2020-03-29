@@ -67,45 +67,54 @@ module.exports.resolveCase = async (req, res, next) => {
 
   try {
     const oId = parseInt(officerId, 10);
-    const fetchedOfficer = await Officer.query().findById(oId);
+    const returnedResult = await Officer.query()
+      .select(['rc.id as caseId', 'rc.name as reporterName', 'rc.email as reporterEmail', 'rc.bike_frame_number as bikeFrameNumber'])
+      .joinRelated('reportedCase', { alias: 'rc' })
+      .where('officers.id', parseInt(officerId, 10))
+      .andWhere('officers.reported_case_id', reportedCaseId);
+
+    const fetchedOfficer = returnedResult[0];
 
     if (!fetchedOfficer) {
       throw new ErrorHandler(404, 'No officer found for the provided id');
     }
-    const options = {
-      relate: true,
-      unrelate: true,
-    };
 
-    if (!fetchedOfficer.reported_case_id) {
+    if (!fetchedOfficer.caseId) {
       return res.success(200, 'No case affected to be resolved', {});
     }
 
-    if (fetchedOfficer.reported_case_id !== reportedCaseId) {
+    if (fetchedOfficer.caseId !== reportedCaseId) {
       throw new ErrorHandler(404, 'The provided reported case does not match the affected one');
     }
     // Archive the resolved case
     const resolvedCase = await ResolvedCase.query().insert({
       officer_id: oId,
-      case_id: parseInt(reportedCaseId, 10),
+      case_id: fetchedOfficer.caseId,
+      reporter_name: fetchedOfficer.reporterName,
+      reporter_email: fetchedOfficer.reporterEmail,
+      bike_frame_number: Number(fetchedOfficer.bikeFrameNumber),
     });
 
     if (process.env.NODE_ENV !== 'test'
       && resolvedCase && Object.keys(resolvedCase).length) {
       const caseId = uuidv4();
-      const message = `The reported case n°: ${resolvedCase.case_id} was resolved`;
+      const message = `The reported case n°: ${reportedCaseId} was resolved`;
       sendNotification(caseId, message);
     }
+
+
     // update the officer availabilty
-    const officerResolvedCase = await Officer.query().upsertGraph({
-      id: oId,
-      available: true,
-      reported_case_id: null,
-      reportedCase: {
-        id: parseInt(reportedCaseId, 10),
-        case_resolved: true,
-      },
-    }, options);
+
+    const reportedCaseUpdated = await ReportedCase.query()
+      .patchAndFetchById(reportedCaseId, { case_resolved: true });
+    let officerResolvedCase;
+    if (reportedCaseUpdated) {
+      officerResolvedCase = await Officer.query().patchAndFetchById(oId, {
+        available: true,
+        reported_case_id: null,
+      });
+    }
+
 
     reportedCaseEmitter.emit('availableReportedCases', officerResolvedCase.id);
     return res.success(200, 'Case was resolved successfully', reportedCaseId);
@@ -237,17 +246,19 @@ module.exports.updateReportedCase = async (req, res, next) => {
 module.exports.resolvedReportedCases = async (req, res, next) => {
   try {
     const { officerId } = req.params;
-    const fetchedOfficer = await Officer.query().findById(officerId);
+    const returnedResult = await ResolvedCase.query()
+      .where('resolved_cases.officer_id', officerId);
+
+    const fetchedOfficer = returnedResult[0];
 
     if (!fetchedOfficer) {
       throw new ErrorHandler(404, 'Officer not found');
     }
 
-    const fetchedResolvedCases = await Officer
-      .relatedQuery('resolvedCase')
-      .select(['rc.id as caseId', 'rc.name', 'rc.email', 'rc.bike_frame_number as bikeFrameNumber'])
-      .for(officerId)
-      .joinRelated('reportedCase', { alias: 'rc' });
+    const fetchedResolvedCases = await ResolvedCase
+      .query()
+      .select(['case_id as caseId', 'reporter_name as name', 'reporter_email as email', 'bike_frame_number as bikeFrameNumber'])
+      .where('resolved_cases.officer_id', officerId);
 
 
     const resolvedCasesList = fetchedResolvedCases.length ? fetchedResolvedCases : [];

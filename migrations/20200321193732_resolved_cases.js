@@ -7,11 +7,10 @@ exports.up = knex => knex.schema
       .references('id')
       .inTable('officers')
       .index();
-    table.integer('case_id')
-      .unsigned()
-      .references('id')
-      .inTable('reported_cases')
-      .index();
+    table.integer('case_id');
+    table.string('reporter_name');
+    table.string('reporter_email');
+    table.decimal('bike_frame_number', 10, 0);
   });
 
 exports.down = knex => knex.schema

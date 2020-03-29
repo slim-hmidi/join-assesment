@@ -54,8 +54,12 @@ describe('Reported Case Controllers ', () => {
 
   describe('Resolve a given case by an officer', () => {
     it('Should returns an error when the given id is not found', async () => {
+      const id = 9;
       const { statusCode, body } = await request(app)
-        .patch('/resolved_cases/9');
+        .patch(`/resolved_cases/${id}`)
+        .send({
+          reportedCaseId: 1,
+        });
 
 
       expect(statusCode).toBe(404);
@@ -253,25 +257,6 @@ describe('Reported Case Controllers ', () => {
 
       expect(statusCode).toBe(404);
       expect(body.message).toBe('Officer not found');
-    });
-
-    it('Should return an empty list if there is no resolved cases', async () => {
-      const reportedCase = await ReportedCase.query().insert({
-        name: 'User x',
-        email: 'user.x@gmail.com',
-        bike_frame_number: 123456789,
-      });
-      const affectedOfficer = await Officer.query().insert({
-        name: 'officer',
-        available: false,
-        reported_case_id: reportedCase.id,
-      });
-      const { statusCode, body } = await request(app)
-        .get(`/resolved_cases/${affectedOfficer.id}`);
-
-
-      expect(statusCode).toBe(200);
-      expect(body.result).toHaveLength(0);
     });
 
 

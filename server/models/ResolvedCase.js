@@ -13,19 +13,9 @@ class ResolvedCase extends Model {
         id: { type: 'integer' },
         officer_id: { type: 'integer' },
         case_id: { type: 'integer' },
-      },
-    };
-  }
-
-  static get relationMappings() {
-    return {
-      reportedCase: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: `${__dirname}/ReportedCase`,
-        join: {
-          from: 'resolved_cases.case_id',
-          to: 'reported_cases.id',
-        },
+        reporter_name: { type: 'string' },
+        reporter_email: { type: 'string' },
+        bike_frame_number: { type: 'integer' },
       },
     };
   }

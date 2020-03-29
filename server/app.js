@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { Model } = require('objection');
 const Knex = require('knex');
-// const WebSocket = require('ws');
 const knexConfig = require('../knexfile');
 const routes = require('./routes/index');
 const { errorMiddleware } = require('./utils/error');
@@ -16,7 +15,6 @@ Model.knex(knex);
 
 
 const app = express();
-// const wss = new WebSocket.Server({ port: 9090 });
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));

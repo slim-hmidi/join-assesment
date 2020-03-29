@@ -1,4 +1,3 @@
-const WebSocket = require('ws');
 const { v4 } = require('uuid');
 const ReportedCase = require('../models/ReportedCase');
 const Officer = require('../models/Officer');
@@ -7,17 +6,17 @@ const ResolvedCase = require('../models/ResolvedCase');
 const reportedCaseEmitter = require('../utils/ReportedCaseEmitter');
 const { ErrorHandler } = require('../utils/error');
 const { formatData } = require('../utils/reportedCasesUtils');
+const { sendNotification } = require('../utils/socket');
 
-
-const wss = new WebSocket.Server({ port: 9090 });
 const uuidv4 = v4;
 
 /**
  * Save a report case into database
  * @param {object} req - Express requrest object
  * @param {object} res - Express response object
+ * @param {object} next - Express middleware
  */
-module.exports.reportCase = async (req, res) => {
+module.exports.reportCase = async (req, res, next) => {
   const {
     name,
     email,
@@ -47,7 +46,7 @@ module.exports.reportCase = async (req, res) => {
       'The reported case was saved successfully',
       formatData(reportedCase));
   } catch (error) {
-    return res.error(error.statusCode || 500, error.message);
+    return next(error);
   }
 };
 
@@ -56,9 +55,10 @@ module.exports.reportCase = async (req, res) => {
  * Resolve an affected case
  * @param {object} req - Express requrest object
  * @param {object} res - Express response object
+ * @param {object} next - Express middleware
  */
 
-module.exports.resolveCase = async (req, res) => {
+module.exports.resolveCase = async (req, res, next) => {
   const {
     officerId,
   } = req.params;
@@ -92,12 +92,9 @@ module.exports.resolveCase = async (req, res) => {
 
     if (process.env.NODE_ENV !== 'test'
       && resolvedCase && Object.keys(resolvedCase).length) {
-      wss.on('connection', (ws) => {
-        ws.send(JSON.stringify({
-          caseId: uuidv4(),
-          message: `The reported case n°: ${resolvedCase.case_id} was resolved`,
-        }));
-      });
+      const caseId = uuidv4();
+      const message = `The reported case n°: ${resolvedCase.case_id} was resolved`;
+      sendNotification(caseId, message);
     }
     // update the officer availabilty
     const officerResolvedCase = await Officer.query().upsertGraph({
@@ -113,7 +110,7 @@ module.exports.resolveCase = async (req, res) => {
     reportedCaseEmitter.emit('availableReportedCases', officerResolvedCase.id);
     return res.success(200, 'Case was resolved successfully', reportedCaseId);
   } catch (error) {
-    return res.error(error.statusCode || 500, error.message);
+    return next(error);
   }
 };
 
@@ -121,10 +118,11 @@ module.exports.resolveCase = async (req, res) => {
    * Fetch reported cases created by a user
    * @param {object} req - Express requrest object
    * @param {object} res - Express response object
+   * @param {object} next - Express middleware
    * @returns {array<object>} - list of reported cases
    */
 
-module.exports.fetchReportedCasesByUser = async (req, res) => {
+module.exports.fetchReportedCasesByUser = async (req, res, next) => {
   try {
     const { name } = req.query;
     if (!name) {
@@ -133,17 +131,18 @@ module.exports.fetchReportedCasesByUser = async (req, res) => {
     const fetchReportedCases = await ReportedCase.query().where('name', name);
     return res.success(200, 'Fetch reported cases successfully', formatData(fetchReportedCases));
   } catch (error) {
-    return res.error(error.statusCode || 500, error.message);
+    return next(error);
   }
 };
 /**
    * Fetch the affected case to a given officer
    * @param {object} req - Express requrest object
    * @param {object} res - Express response object
+   * @param {object} next - Express middleware
    * @returns {object} - affected case
    */
 
-module.exports.affectedCaseToOfficer = async (req, res) => {
+module.exports.affectedCaseToOfficer = async (req, res, next) => {
   try {
     const { officerId } = req.params;
     const fetchAffectedCase = await Officer.relatedQuery('reportedCase')
@@ -156,7 +155,7 @@ module.exports.affectedCaseToOfficer = async (req, res) => {
 
     return res.success(200, 'Fetch affected case successfully', formatData(fetchAffectedCase));
   } catch (error) {
-    return res.error(error.statusCode || 500, error.message);
+    return next(error);
   }
 };
 
@@ -164,9 +163,10 @@ module.exports.affectedCaseToOfficer = async (req, res) => {
    * Delete a reported case
    * @param {object} req - Express requrest object
    * @param {object} res - Express response object
+   * @param {object} next - Express middleware
    */
 
-module.exports.deleteReportedCase = async (req, res) => {
+module.exports.deleteReportedCase = async (req, res, next) => {
   try {
     const { caseId } = req.params;
     const affectedReportedCase = await Officer.query()
@@ -184,7 +184,7 @@ module.exports.deleteReportedCase = async (req, res) => {
     const deletedReportedCase = await ReportedCase.query().deleteById(caseId).returning('*');
     return res.success(200, 'Reported case deleted successfully!', formatData(deletedReportedCase));
   } catch (error) {
-    return res.error(error.statusCode || 500, error.message);
+    return next(error);
   }
 };
 
@@ -193,9 +193,10 @@ module.exports.deleteReportedCase = async (req, res) => {
    * Update a reported case
    * @param {object} req - Express requrest object
    * @param {object} res - Express response object
+   * @param {object} next - Express middleware
    */
 
-module.exports.updateReportedCase = async (req, res) => {
+module.exports.updateReportedCase = async (req, res, next) => {
   try {
     const { caseId } = req.params;
     const affectedReportedCase = await Officer.query()
@@ -220,7 +221,7 @@ module.exports.updateReportedCase = async (req, res) => {
       });
     return res.success(200, 'Reported case updated successfully!', formatData(updatedReportedCase));
   } catch (error) {
-    return res.error(error.statusCode || 500, error.message);
+    return next(error);
   }
 };
 
@@ -229,10 +230,11 @@ module.exports.updateReportedCase = async (req, res) => {
    * Returns the list of resolved cases by an affected officer
    * @param {object} req - Express requrest object
    * @param {object} res - Express response object
+   * @param {object} next - Express middleware
    * @returns {array<object>} - list of resolved cases
    */
 
-module.exports.resolvedReportedCases = async (req, res) => {
+module.exports.resolvedReportedCases = async (req, res, next) => {
   try {
     const { officerId } = req.params;
     const fetchedOfficer = await Officer.query().findById(officerId);
@@ -252,6 +254,6 @@ module.exports.resolvedReportedCases = async (req, res) => {
 
     return res.success(200, `Resolved cases by officer: ${officerId} are fetched successfully!`, resolvedCasesList);
   } catch (error) {
-    return res.error(error.statusCode || 500, error.message);
+    return next(error);
   }
 };

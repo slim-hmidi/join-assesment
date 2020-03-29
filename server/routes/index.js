@@ -7,14 +7,8 @@ routes.use((req, res, next) => {
     message,
     result,
   });
-  res.error = (statusCode, message, error) => res.status(statusCode).send({
-    message,
-    error,
-  });
   return next();
 });
-
-
 routes.route('/reported_cases')
   .post(ctrlReportedCases.reportCase)
   .get(ctrlReportedCases.fetchReportedCasesByUser);

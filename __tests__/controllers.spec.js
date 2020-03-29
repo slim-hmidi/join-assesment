@@ -145,7 +145,7 @@ describe('Reported Case Controllers ', () => {
         .get(`/affected_cases/${newOfficer.id}`);
 
       expect(statusCode).toBe(200);
-      expect(body.result).toEqual({});
+      expect(body.result).toHaveLength(0);
     });
   });
 

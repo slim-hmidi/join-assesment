@@ -1,4 +1,3 @@
-const { v4 } = require('uuid');
 const ReportedCase = require('../models/ReportedCase');
 const Officer = require('../models/Officer');
 const ResolvedCase = require('../models/ResolvedCase');
@@ -6,9 +5,6 @@ const ResolvedCase = require('../models/ResolvedCase');
 const reportedCaseEmitter = require('../utils/ReportedCaseEmitter');
 const { ErrorHandler } = require('../utils/error');
 const { formatData } = require('../utils/reportedCasesUtils');
-const { sendNotification } = require('../utils/socket');
-
-const uuidv4 = v4;
 
 /**
  * Save a report case into database
@@ -87,20 +83,13 @@ module.exports.resolveCase = async (req, res, next) => {
       throw new ErrorHandler(404, 'The provided reported case does not match the affected one');
     }
     // Archive the resolved case
-    const resolvedCase = await ResolvedCase.query().insert({
+    await ResolvedCase.query().insert({
       officer_id: oId,
       case_id: fetchedOfficer.caseId,
       reporter_name: fetchedOfficer.reporterName,
       reporter_email: fetchedOfficer.reporterEmail,
       bike_frame_number: Number(fetchedOfficer.bikeFrameNumber),
     });
-
-    if (process.env.NODE_ENV !== 'test'
-      && resolvedCase && Object.keys(resolvedCase).length) {
-      const caseId = uuidv4();
-      const message = `The reported case n°: ${reportedCaseId} was resolved`;
-      sendNotification(caseId, message);
-    }
 
 
     // update the officer availabilty
